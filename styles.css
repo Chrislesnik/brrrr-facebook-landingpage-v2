@@ -1,0 +1,26 @@
+@import "tailwindcss";
+@config "./tailwind.config.js";
+
+:root {
+	--color-primary: #7ca4a4;
+	--color-primary-600: #427e81;
+	--color-accent: #3a6b9d;
+	--color-black: #000000;
+	--color-white: #ffffff;
+}
+
+/* Brand CTA behavior: primary by default, darken on hover/active */
+.brand-cta {
+	--button-fill: var(--color-primary);
+}
+.brand-cta:hover,
+.brand-cta:active {
+	--button-fill: var(--color-primary-600);
+}
+
+/* Map prior 'secondary' usage to brand accent without introducing new hues */
+.text-secondary { color: var(--color-accent) !important; }
+.border-secondary { border-color: var(--color-accent) !important; }
+.bg-secondary { background-color: var(--color-accent) !important; }
+.text-secondary-foreground { color: var(--color-white) !important; }
+.bg-secondary-foreground { background-color: var(--color-white) !important; }
