@@ -4,7 +4,7 @@ import React from "react";
 import {cn} from "@heroui/react";
 
 import HighlightsRotator from "./highlights-rotator";
-import logoUrl from "./vyral-peo-logo.png";
+import logoUrl from "./brrrr-logo-2025-11-11.png";
 
 export type MultiStepSidebarProps = React.HTMLAttributes<HTMLDivElement> & {
   currentPage: number;
@@ -14,18 +14,11 @@ export type MultiStepSidebarProps = React.HTMLAttributes<HTMLDivElement> & {
 };
 
 const highlights = [
-  "Payroll and tax administration made simple",
-  "Fortune 500–level benefits for your team",
-  "Compliance and risk management handled",
-  "Onboarding and HR workflows streamlined",
-  "Workers’ comp and safety support",
-  "Multi‑state compliance expertise",
-  "ACA, COBRA, and benefits admin",
-  "Time & attendance and PTO tracking",
-  "HR policies and employee handbooks",
-  "Secure payroll with direct deposit",
-  "Background checks and onboarding kits",
-  "Seamless integrations with your tools",
+  "Buy 🏠",
+  "Rehab 🛠️",
+  "Rent 🏡",
+  "Refinance 💸",
+  "Repeat 🔁",
 ];
 
 const MultiStepSidebar = React.forwardRef<HTMLDivElement, MultiStepSidebarProps>(
@@ -40,19 +33,18 @@ const MultiStepSidebar = React.forwardRef<HTMLDivElement, MultiStepSidebarProps>
           className="rounded-large shadow-small flex hidden h-full w-[344px] shrink-0 flex-col items-start gap-y-4 px-8 py-6 lg:flex"
           style={{
             backgroundImage:
-              "linear-gradient(to bottom, rgb(124 164 164 / 0.12), rgb(58 107 157 / 0.12))",
+              "linear-gradient(to bottom, rgba(255,77,64,0.12), rgba(255,183,3,0.12))",
           }}
         >
           <img
-            alt="Vyral PEO"
-            className="h-20 md:h-28 lg:h-32 w-auto -mb-2 md:-mb-3"
+            alt="BRRRR Loans"
+            className="w-full max-w-full max-h-16 md:max-h-20 lg:max-h-24 object-contain mb-3 md:mb-4"
             src={logoUrl}
           />
           <div>
             <div className="text-default-500 mt-1 text-base leading-6 font-medium">
-              Vyral PEO is a full‑service Professional Employer Organization that streamlines payroll,
-              benefits, HR, and compliance—delivering enterprise‑grade coverage and support so your
-              team can focus on growth.
+              BRRRR Loans is a private direct lender for real estate investing mortgages nationwide,
+              lending exclusively to real estate investors. We specialize in DSCR and Fix &amp; Flip loans.
             </div>
           </div>
           {/* Desktop Rotating Highlights */}
@@ -65,13 +57,13 @@ const MultiStepSidebar = React.forwardRef<HTMLDivElement, MultiStepSidebarProps>
             className="rounded-large shadow-small w-full py-4 md:max-w-xl lg:hidden"
             style={{
               backgroundImage:
-                "linear-gradient(to right, rgb(124 164 164 / 0.12), rgb(58 107 157 / 0.12))",
+                "linear-gradient(to right, rgba(255,77,64,0.12), rgba(255,183,3,0.12))",
             }}
           >
             <div className="flex flex-col items-center gap-2 px-6">
               <img
-                alt="Vyral PEO"
-                className="h-20 sm:h-24 md:h-28 w-auto"
+                alt="BRRRR Loans"
+                className="w-full max-w-[220px] max-h-12 sm:max-h-14 md:max-h-16 object-contain mb-2"
                 src={logoUrl}
               />
               {/* Mobile Rotating Highlights */}

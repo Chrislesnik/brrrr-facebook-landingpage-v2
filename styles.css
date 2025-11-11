@@ -2,9 +2,10 @@
 @config "./tailwind.config.js";
 
 :root {
-	--color-primary: #7ca4a4;
-	--color-primary-600: #427e81;
-	--color-accent: #3a6b9d;
+	/* Warm mesh palette (red → orange → amber) */
+	--color-primary: #ff7a00;        /* orange */
+	--color-primary-600: #e64500;    /* deeper orange/red */
+	--color-accent: #ffb703;         /* amber */
 	--color-black: #000000;
 	--color-white: #ffffff;
 }

@@ -36,13 +36,13 @@ export default function HighlightsRotator({
 
 	return (
 		<LazyMotion features={domAnimation}>
-			<div className={cn("relative h-[28px] overflow-hidden", className)}>
+			<div className={cn("relative h-[40px] overflow-hidden", className)}>
 				<AnimatePresence mode="wait" initial={false}>
 					<m.div
 						key={index}
 						aria-live="polite"
 						aria-atomic="true"
-						className="text-default-700 text-base leading-7 font-medium"
+						className="text-default-700 text-xl leading-9 font-medium"
 						variants={slideVariants}
 						initial="enter"
 						animate="center"

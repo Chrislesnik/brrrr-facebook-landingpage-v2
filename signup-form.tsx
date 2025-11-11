@@ -121,10 +121,10 @@ const SignUpForm = React.forwardRef<HTMLFormElement, SignUpFormProps>(
     return (
       <>
         <div className="text-default-foreground text-3xl leading-9 font-bold">
-          Welcome to Vyral PEO 👋
+          Welcome to BRRRR Loans 👋
         </div>
         <div className="text-medium text-default-500 py-2">
-          Share a few details so we can tailor Vyral PEO services to your needs. After you submit,
+          Share a few details so we can tailor BRRRR Loans services to your needs. After you submit,
           our AI agent will reach out to connect.
         </div>
         <form
