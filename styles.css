@@ -39,3 +39,17 @@
 @keyframes spin {
 	to { transform: rotate(360deg); }
 }
+
+/* Ensure the app background is always full-bleed black and never shows white */
+html, body {
+	min-height: 100%;
+	height: 100%;
+	background-color: #000000;
+	color: var(--color-white);
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+#root {
+	min-height: 100vh;
+	background-color: #000000;
+}

@@ -792,9 +792,9 @@ const SignUpForm = React.forwardRef<HTMLFormElement, SignUpFormProps>(
         </form>
         {/* Terms / Results display */}
         {pricingResult && submittedLoanType && (
-          <div className="mt-6 space-y-4">
+          <div className="mt-6 space-y-4 w-full">
             {pricingValidation ? (
-              <div className="rounded-large border border-default-200 p-4">
+              <div className="rounded-large border border-default-200 p-4 w-full max-w-full">
                 {submittedLoanType === "DSCR" ? (
                   <>
                     <div className="text-default-foreground text-xl font-semibold mb-2">
@@ -816,8 +816,8 @@ const SignUpForm = React.forwardRef<HTMLFormElement, SignUpFormProps>(
                       <summary className="cursor-pointer text-default-600 group-open:text-default-800">
                         View full terms
                       </summary>
-                      <div className="mt-3 text-default-600">
-                        <dl className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="mt-3 text-default-600 overflow-x-auto">
+                        <dl className="grid grid-cols-1 md:grid-cols-2 gap-3 break-words min-w-0">
                           {Object.entries(pricingResult)
                             .filter(
                               ([k]) =>
@@ -833,9 +833,9 @@ const SignUpForm = React.forwardRef<HTMLFormElement, SignUpFormProps>(
                                 ].includes(k),
                             )
                             .map(([k, v]) => (
-                              <div key={k} className="flex items-center justify-between gap-3">
+                              <div key={k} className="flex items-center justify-between gap-3 min-w-0">
                                 <dt className="text-sm text-default-500">{k}</dt>
-                                <dd className="text-sm text-default-800">
+                                <dd className="text-sm text-default-800 break-words text-right">
                                   {typeof v === "object" ? JSON.stringify(v) : String(v ?? "—")}
                                 </dd>
                               </div>
@@ -846,7 +846,7 @@ const SignUpForm = React.forwardRef<HTMLFormElement, SignUpFormProps>(
                   </>
                 ) : (
                   <>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-full">
                       <div className="rounded-medium bg-content2 p-3">
                         <div className="text-default-500 text-sm">Initial Loan Amount</div>
                         <div className="text-default-foreground text-lg font-semibold">
@@ -897,8 +897,8 @@ const SignUpForm = React.forwardRef<HTMLFormElement, SignUpFormProps>(
                       <summary className="cursor-pointer text-default-600 group-open:text-default-800">
                         View full terms
                       </summary>
-                      <div className="mt-3 text-default-600">
-                        <dl className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="mt-3 text-default-600 overflow-x-auto">
+                        <dl className="grid grid-cols-1 md:grid-cols-2 gap-3 break-words min-w-0">
                           {Object.entries(pricingResult)
                             .filter(([k]) => ![
                               "initialLoanAmount","InitialLoanAmount","loanAmount","LoanAmount",
@@ -907,9 +907,9 @@ const SignUpForm = React.forwardRef<HTMLFormElement, SignUpFormProps>(
                               "Validation","validation","Errors","errors"
                             ].includes(k))
                             .map(([k, v]) => (
-                              <div key={k} className="flex items-center justify-between gap-3">
+                              <div key={k} className="flex items-center justify-between gap-3 min-w-0">
                                 <dt className="text-sm text-default-500">{k}</dt>
-                                <dd className="text-sm text-default-800">
+                                <dd className="text-sm text-default-800 break-words text-right">
                                   {typeof v === "object" ? JSON.stringify(v) : String(v ?? "—")}
                                 </dd>
                               </div>
@@ -924,7 +924,7 @@ const SignUpForm = React.forwardRef<HTMLFormElement, SignUpFormProps>(
               <div className="rounded-large border border-danger-200 bg-danger-50/10 p-4">
                 <div className="text-danger-400 font-semibold mb-2">We couldn't price this request</div>
                 {pricingErrors.length > 0 ? (
-                  <ul className="list-disc pl-5 text-default-600">
+                  <ul className="list-disc pl-5 text-default-600 break-words">
                     {pricingErrors.map((err, idx) => (
                       <li key={idx}>{err}</li>
                     ))}

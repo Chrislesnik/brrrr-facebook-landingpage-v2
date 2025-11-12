@@ -26,11 +26,11 @@ const MultiStepSidebar = React.forwardRef<HTMLDivElement, MultiStepSidebarProps>
     return (
       <div
         ref={ref}
-        className={cn("flex h-[calc(100vh-40px)] w-full gap-x-2", className)}
+        className={cn("flex min-h-screen w-full gap-x-2", className)}
         {...props}
       >
         <div
-          className="rounded-large shadow-small flex hidden h-full w-[344px] shrink-0 flex-col items-start gap-y-4 px-8 py-6 lg:flex"
+          className="rounded-large shadow-small flex hidden min-h-full self-stretch w-[344px] shrink-0 flex-col items-start gap-y-4 px-8 py-6 lg:flex"
           style={{
             backgroundImage:
               "linear-gradient(to bottom, rgba(255,77,64,0.15), rgba(255,183,3,0.15))",
