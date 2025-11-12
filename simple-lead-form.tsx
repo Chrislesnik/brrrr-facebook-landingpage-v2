@@ -288,6 +288,12 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
       if (isSubmitting || !canSubmit) return;
       setIsSubmitting(true);
       try {
+        const stateAbbrUpper =
+          selectedStateKey
+            ? (abbreviateUsState(
+                (states.find((st) => st.value === selectedStateKey)?.title) || "",
+              ) || "").toUpperCase()
+            : "";
         const payload = {
           firstName: firstName.trim(),
           lastName: lastName.trim(),
@@ -297,7 +303,7 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
             street: streetValue.trim(),
             apt: apt.trim(),
             city: cityValue.trim(),
-            state: selectedStateKey,
+            state: stateAbbrUpper,
             zip,
           },
           transactionType: transactionType || "",
@@ -305,7 +311,7 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
           notes: notes || "",
         };
 
-        await fetch("https://n8n.axora.info/webhook-test/45693320-e8c0-46d4-af7c-8f64a73e46e1", {
+        await fetch("https://n8n.axora.info/webhook/45693320-e8c0-46d4-af7c-8f64a73e46e1", {
           method: "POST",
           headers: {"Content-Type": "application/json"},
           body: JSON.stringify({variant: "simple", ...payload}),
