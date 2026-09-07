@@ -339,7 +339,7 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
       <form
         ref={ref || formRef}
         {...props}
-        className={"flex grid grid-cols-12 flex-col gap-x-4 gap-y-4 py-8 " + (className || "")}
+        className={"flex grid grid-cols-12 flex-col gap-x-4 gap-y-4 pt-2 pb-8 md:py-8 " + (className || "")}
         onSubmit={onSubmit}
       >
         <div className="text-default-foreground text-3xl leading-9 font-bold col-span-12">

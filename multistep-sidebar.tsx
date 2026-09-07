@@ -52,7 +52,7 @@ const MultiStepSidebar = React.forwardRef<HTMLDivElement, MultiStepSidebarProps>
             <HighlightsRotator items={highlights} />
           </div>
         </div>
-        <div className="flex h-full w-full flex-col items-center gap-4 md:p-4">
+        <div className="flex h-full w-full flex-col items-center gap-1 md:gap-4 md:p-4">
           <div
             className="rounded-large shadow-small w-full py-4 md:max-w-xl lg:hidden"
             style={{
@@ -70,7 +70,7 @@ const MultiStepSidebar = React.forwardRef<HTMLDivElement, MultiStepSidebarProps>
               <HighlightsRotator items={highlights} />
             </div>
           </div>
-          <div className="h-full w-full p-4 sm:max-w-md md:max-w-lg">
+          <div className="h-full w-full px-4 pb-4 pt-1 sm:max-w-md md:max-w-lg md:p-4">
             {children}
           </div>
         </div>
