@@ -9,6 +9,7 @@ import {cn} from "@heroui/react";
 import {ButtonWithBorderGradient} from "./button-with-border-gradient";
 import {LazyMotion, domAnimation, m, AnimatePresence} from "framer-motion";
 import {loadGoogleMaps} from "./google-maps-loader";
+import {trackMetaEvent} from "./meta-pixel";
 
 export type SignUpFormProps = React.HTMLAttributes<HTMLFormElement>;
 
@@ -500,6 +501,11 @@ const SignUpForm = React.forwardRef<HTMLFormElement, SignUpFormProps>(
           : [];
         setPricingErrors(errs as string[]);
         setPricingResult(json);
+        // Meta standard event: only after application payload is accepted by the backend
+        // https://eventsmanager.facebook.com/business/help/402791146561655
+        if (response.ok) {
+          trackMetaEvent("SubmitApplication");
+        }
         setSubmitState("success");
         // Make the button reusable by resetting the label after a short delay
         setTimeout(() => setSubmitState("idle"), 1200);

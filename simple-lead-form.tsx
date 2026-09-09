@@ -15,6 +15,7 @@ import {
 import states from "./states";
 import {ButtonWithBorderGradient} from "./button-with-border-gradient";
 import {loadGoogleMaps} from "./google-maps-loader";
+import {trackMetaEvent} from "./meta-pixel";
 
 export type SimpleLeadFormProps = React.HTMLAttributes<HTMLFormElement>;
 
@@ -316,6 +317,9 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
           headers: {"Content-Type": "application/json"},
           body: JSON.stringify({variant: "simple", ...payload}),
         });
+        // Meta standard event: only after successful form send, not on button click
+        // https://eventsmanager.facebook.com/business/help/402791146561655
+        trackMetaEvent("Lead");
         setSubmitted(true);
       } catch {
         // ignore errors for now; could surface UI later
