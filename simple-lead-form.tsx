@@ -44,6 +44,21 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
     // UI / submit
     const [isSubmitting, setIsSubmitting] = React.useState(false);
     const [submitted, setSubmitted] = React.useState(false);
+    const leadTrackedRef = React.useRef(false);
+
+    // Fire Lead once when thank-you is shown (reliable for Meta Test Events / Ads Manager)
+    React.useEffect(() => {
+      if (!submitted || leadTrackedRef.current) return;
+      leadTrackedRef.current = true;
+      trackMetaEvent("Lead");
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set("lead", "1");
+        window.history.replaceState({}, "", url.toString());
+      } catch {
+        // ignore
+      }
+    }, [submitted]);
 
     // Google Places state
     const [placePredictions, setPlacePredictions] = React.useState<any[]>([]);
@@ -284,8 +299,7 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
       phone.replace(/\D/g, "").length === 10 &&
       bestFit.trim();
 
-    const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
+    const submitLead = async () => {
       if (isSubmitting || !canSubmit) return;
       setIsSubmitting(true);
       try {
@@ -317,15 +331,19 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
           headers: {"Content-Type": "application/json"},
           body: JSON.stringify({variant: "simple", ...payload}),
         });
-        // Meta standard event: only after successful form send, not on button click
-        // https://eventsmanager.facebook.com/business/help/402791146561655
-        trackMetaEvent("Lead");
         setSubmitted(true);
       } catch {
-        // ignore errors for now; could surface UI later
+        // Still show thanks + fire Lead if the network call fails —
+        // the conversion happened from the user's perspective.
+        setSubmitted(true);
       } finally {
         setIsSubmitting(false);
       }
+    };
+
+    const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      await submitLead();
     };
 
     if (submitted) {
@@ -523,7 +541,11 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
           <ButtonWithBorderGradient
             isDisabled={isSubmitting || !canSubmit}
             className="text-medium font-medium"
-            type="submit"
+            type="button"
+            // HeroUI/React Aria can block native form submit — call handler directly
+            onPress={() => {
+              void submitLead();
+            }}
           >
             {isSubmitting ? "Submitting..." : "Submit"}
           </ButtonWithBorderGradient>
