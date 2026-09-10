@@ -15,7 +15,7 @@ import {
 import states from "./states";
 import {ButtonWithBorderGradient} from "./button-with-border-gradient";
 import {loadGoogleMaps} from "./google-maps-loader";
-import {setMetaUserData, trackMetaEvent} from "./meta-pixel";
+import {trackMetaEvent} from "./meta-pixel";
 
 export type SimpleLeadFormProps = React.HTMLAttributes<HTMLFormElement>;
 
@@ -45,33 +45,13 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
     const [isSubmitting, setIsSubmitting] = React.useState(false);
     const [submitted, setSubmitted] = React.useState(false);
     const leadTrackedRef = React.useRef(false);
-    const leadUserRef = React.useRef<{
-      email: string;
-      phone: string;
-      firstName: string;
-      lastName: string;
-    } | null>(null);
 
-    // Fire Lead once when thank-you is shown (reliable for Meta Test Events / Ads Manager)
+    // Fire plain Lead only — financial-category "core setup" restrictions
+    // block custom parameters and URL query data from being processed by Meta.
     React.useEffect(() => {
       if (!submitted || leadTrackedRef.current) return;
       leadTrackedRef.current = true;
-      const user = leadUserRef.current;
-      if (user) {
-        setMetaUserData(user);
-      }
-      trackMetaEvent("Lead", {
-        content_name: "Quick Contact",
-        content_category: "lead_form",
-        status: true,
-      });
-      try {
-        const url = new URL(window.location.href);
-        url.searchParams.set("lead", "1");
-        window.history.replaceState({}, "", url.toString());
-      } catch {
-        // ignore
-      }
+      trackMetaEvent("Lead");
     }, [submitted]);
 
     // Google Places state
@@ -345,22 +325,10 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
           headers: {"Content-Type": "application/json"},
           body: JSON.stringify({variant: "simple", ...payload}),
         });
-        leadUserRef.current = {
-          firstName: payload.firstName,
-          lastName: payload.lastName,
-          email: payload.email,
-          phone: payload.phone,
-        };
         setSubmitted(true);
       } catch {
         // Still show thanks + fire Lead if the network call fails —
         // the conversion happened from the user's perspective.
-        leadUserRef.current = {
-          firstName: firstName.trim(),
-          lastName: lastName.trim(),
-          email: email.trim(),
-          phone: phone.trim(),
-        };
         setSubmitted(true);
       } finally {
         setIsSubmitting(false);
