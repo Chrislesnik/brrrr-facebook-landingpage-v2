@@ -14,7 +14,8 @@ import {
 } from "@heroui/react";
 import states from "./states";
 import {ButtonWithBorderGradient} from "./button-with-border-gradient";
-import {loadGoogleMaps} from "./google-maps-loader";
+import type {SelectedAddress} from "./use-address-autocomplete";
+import {useAddressAutocomplete} from "./use-address-autocomplete";
 import {trackMetaEvent} from "./meta-pixel";
 
 export type SimpleLeadFormProps = React.HTMLAttributes<HTMLFormElement>;
@@ -55,20 +56,11 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
     }, [submitted]);
 
     // Bring the thank-you message into view — on mobile the visitor submits from the bottom
-    // of a long form. The body (not the window) is the scroll container per styles.css.
+    // of a long form.
     React.useEffect(() => {
       if (!submitted) return;
       window.scrollTo({top: 0});
-      document.body.scrollTo({top: 0});
     }, [submitted]);
-
-    // Google Places state
-    const [placePredictions, setPlacePredictions] = React.useState<any[]>([]);
-    const [showPredictions, setShowPredictions] = React.useState<boolean>(false);
-    const placesServiceRef = React.useRef<any | null>(null);
-    const autocompleteServiceRef = React.useRef<any | null>(null);
-    const sessionTokenRef = React.useRef<any | null>(null);
-    const debounceTimerRef = React.useRef<number | null>(null);
 
     const inputProps: Pick<InputProps, "labelPlacement" | "classNames"> = {
       labelPlacement: "outside",
@@ -172,7 +164,10 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
 
     // Phone formatting: (xxx) xxx-xxxx
     const formatUsPhone = (raw: string): string => {
-      const digits = raw.replace(/\D/g, "").slice(0, 10);
+      let digits = raw.replace(/\D/g, "");
+      // Browser autofill and pastes can include the +1 country code
+      if (digits.length === 11 && digits.startsWith("1")) digits = digits.slice(1);
+      digits = digits.slice(0, 10);
       const a = digits.slice(0, 3);
       const b = digits.slice(3, 6);
       const c = digits.slice(6, 10);
@@ -190,109 +185,24 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
       setZip(digits);
     };
 
-    // Load Google Maps Places
-    React.useEffect(() => {
-      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
-      if (!apiKey) return;
-      let isMounted = true;
-      loadGoogleMaps(apiKey)
-        .then((google) => {
-          if (!isMounted) return;
-          autocompleteServiceRef.current = new google.maps.places.AutocompleteService();
-          placesServiceRef.current = new google.maps.places.PlacesService(document.createElement("div"));
-          sessionTokenRef.current = new google.maps.places.AutocompleteSessionToken();
-        })
-        .catch(() => {});
-      return () => {
-        isMounted = false;
-      };
-    }, []);
-
-    // Debounced fetch predictions
-    const fetchPredictions = React.useCallback((value: string) => {
-      if (!autocompleteServiceRef.current || !value.trim()) {
-        setPlacePredictions([]);
-        setShowPredictions(false);
-        return;
+    // Google Places address suggestions — fill the fields from the picked address,
+    // keeping what the visitor typed wherever Google has no value
+    const handleAddressSelect = (address: SelectedAddress) => {
+      setStreetValue(address.street);
+      if (address.apt) setApt(address.apt);
+      if (address.city) setCityValue(address.city);
+      if (address.zip) setZip(address.zip);
+      if (address.stateAbbr) {
+        const stateVal = findStateValueByAbbreviation(address.stateAbbr);
+        if (stateVal) setSelectedStateKey(stateVal);
       }
-      autocompleteServiceRef.current.getPlacePredictions(
-        {
-          input: value,
-          types: ["address"],
-          sessionToken: sessionTokenRef.current || undefined,
-        },
-        (preds: any) => {
-          setPlacePredictions(preds || []);
-          setShowPredictions(Boolean(preds && preds.length));
-        },
-      );
-    }, []);
+    };
+    const addressAutocomplete = useAddressAutocomplete(handleAddressSelect);
 
     const onStreetInputChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-      const val = e.target.value;
-      setStreetValue(val);
-      if (debounceTimerRef.current) window.clearTimeout(debounceTimerRef.current);
-      debounceTimerRef.current = window.setTimeout(() => fetchPredictions(val), 180);
+      setStreetValue(e.target.value);
+      addressAutocomplete.onInputChange(e.target.value);
     };
-
-    const selectPrediction = (prediction: any) => {
-      const placesService = placesServiceRef.current;
-      if (!placesService) return;
-      placesService.getDetails(
-        {
-          placeId: prediction.place_id,
-          sessionToken: sessionTokenRef.current || undefined,
-          fields: ["address_components"],
-        },
-        (place: any) => {
-          if (!place || !(place as any).address_components) {
-            setStreetValue(prediction.description);
-            setShowPredictions(false);
-            return;
-          }
-          const components: any[] = (place as any).address_components || [];
-          const getComponent = (type: string, short = true) => {
-            const comp = components.find((c) => c.types.includes(type));
-            return comp ? (short ? comp.short_name : comp.long_name) : "";
-          };
-          const streetNumber = getComponent("street_number");
-          const route = getComponent("route", false);
-          const city =
-            getComponent("locality", false) ||
-            getComponent("sublocality", false) ||
-            getComponent("administrative_area_level_2", false);
-          const stateAbbr = getComponent("administrative_area_level_1");
-          const postal = getComponent("postal_code");
-
-          const streetCombined = `${streetNumber} ${route}`.trim();
-          setStreetValue(streetCombined || prediction.description);
-          setCityValue(city);
-          setZip(postal);
-          if (stateAbbr) {
-            const stateVal = findStateValueByAbbreviation(stateAbbr);
-            if (stateVal) setSelectedStateKey(stateVal);
-          }
-          setShowPredictions(false);
-          setPlacePredictions([]);
-          if (sessionTokenRef.current) {
-            sessionTokenRef.current = new (window as any).google.maps.places.AutocompleteSessionToken();
-          }
-        },
-      );
-    };
-
-    // Close suggestions on outside click
-    React.useEffect(() => {
-      const onDocClick = (e: MouseEvent) => {
-        const root = document.getElementById("simple-street-autocomplete-root");
-        if (!root) return;
-        if (!root.contains(e.target as Node)) {
-          setShowPredictions(false);
-        }
-      };
-      document.addEventListener("mousedown", onDocClick);
-      return () => document.removeEventListener("mousedown", onDocClick);
-    }, []);
 
     // Deal details (all but Apt #) are required once the visitor says they have a deal
     const needsDealInfo = bestFit === "I have a deal";
@@ -390,6 +300,7 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
           className="col-span-12 md:col-span-6"
           label={<Required text="First Name" />}
           placeholder="Jane"
+          autoComplete="given-name"
           required
           value={firstName}
           onChange={(e) => setFirstName(e.target.value)}
@@ -399,6 +310,7 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
           className="col-span-12 md:col-span-6"
           label={<Required text="Last Name" />}
           placeholder="Doe"
+          autoComplete="family-name"
           required
           value={lastName}
           onChange={(e) => setLastName(e.target.value)}
@@ -409,6 +321,7 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
           label={<Required text="Email" />}
           type="email"
           placeholder="jane@domain.com"
+          autoComplete="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -420,7 +333,7 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
           type="tel"
           placeholder="(xxx) xxx-xxxx"
           inputMode="numeric"
-          maxLength={14}
+          autoComplete="tel-national"
           required
           value={phone}
           onChange={handlePhoneChange}
@@ -446,36 +359,58 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
         {/* Deal-specific fields: only show when bestFit is "I have a deal" */}
         {bestFit === "I have a deal" && (
           <>
-            <div className="relative col-span-12 md:col-span-8" id="simple-street-autocomplete-root">
+            <div className="relative col-span-12 md:col-span-8" ref={addressAutocomplete.rootRef}>
               <Input
                 className="w-full"
                 label={<Required text="Street" />}
                 name="street"
                 placeholder="123 Main St"
                 required
+                // Chrome's saved-address popup would cover the Google suggestions
+                autoComplete="off"
+                role="combobox"
+                aria-autocomplete="list"
+                aria-expanded={addressAutocomplete.open}
+                aria-controls={addressAutocomplete.listboxId}
+                aria-activedescendant={
+                  addressAutocomplete.activeIndex >= 0
+                    ? addressAutocomplete.optionId(addressAutocomplete.activeIndex)
+                    : undefined
+                }
                 value={streetValue}
                 onChange={onStreetInputChange}
-                onFocus={() => setShowPredictions(placePredictions.length > 0)}
+                onKeyDown={addressAutocomplete.onKeyDown}
+                onFocus={addressAutocomplete.onFocus}
                 {...inputProps}
               />
-              {showPredictions && placePredictions.length > 0 && (
-                <div
-                  className="absolute z-50 mt-1 w-full rounded-large border border-default-200 bg-background shadow-large max-h-72 overflow-auto left-0"
-                  role="listbox"
-                  aria-label="Address suggestions"
-                >
-                  {placePredictions.map((p) => (
-                    <button
-                      key={p.place_id}
-                      type="button"
-                      onClick={() => selectPrediction(p)}
-                      className="w-full text-left px-3 py-2 hover:bg-content3 focus:bg-content3 outline-none"
-                    >
-                      <div className="text-sm text-default-800">{p.structured_formatting.main_text}</div>
-                      <div className="text-xs text-default-500">{p.structured_formatting.secondary_text}</div>
-                    </button>
-                  ))}
-                  <div className="px-3 py-1 text-[10px] text-default-500">Powered by Google</div>
+              {addressAutocomplete.open && (
+                <div className="suggestions-in absolute z-50 mt-1 w-full rounded-large bg-content1 shadow-medium p-1 max-h-72 overflow-auto left-0">
+                  <div
+                    id={addressAutocomplete.listboxId}
+                    role="listbox"
+                    aria-label="Address suggestions"
+                    className="flex flex-col gap-0.5"
+                  >
+                    {addressAutocomplete.suggestions.map((s, i) => (
+                      <button
+                        key={s.placeId}
+                        id={addressAutocomplete.optionId(i)}
+                        type="button"
+                        role="option"
+                        aria-selected={i === addressAutocomplete.activeIndex}
+                        tabIndex={-1}
+                        onClick={() => void addressAutocomplete.select(s)}
+                        className={
+                          "w-full text-left rounded-small px-2 py-1.5 outline-none transition-colors hover:bg-default-100" +
+                          (i === addressAutocomplete.activeIndex ? " bg-default-100" : "")
+                        }
+                      >
+                        <div className="text-sm text-default-800">{s.mainText}</div>
+                        <div className="text-xs text-default-500">{s.secondaryText}</div>
+                      </button>
+                    ))}
+                  </div>
+                  <div className="px-2 pt-1 pb-0.5 text-[10px] text-default-500">Powered by Google</div>
                 </div>
               )}
             </div>
