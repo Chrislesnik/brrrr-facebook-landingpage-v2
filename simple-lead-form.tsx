@@ -54,6 +54,14 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
       trackMetaEvent("Lead");
     }, [submitted]);
 
+    // Bring the thank-you message into view — on mobile the visitor submits from the bottom
+    // of a long form. The body (not the window) is the scroll container per styles.css.
+    React.useEffect(() => {
+      if (!submitted) return;
+      window.scrollTo({top: 0});
+      document.body.scrollTo({top: 0});
+    }, [submitted]);
+
     // Google Places state
     const [placePredictions, setPlacePredictions] = React.useState<any[]>([]);
     const [showPredictions, setShowPredictions] = React.useState<boolean>(false);
@@ -286,12 +294,25 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
       return () => document.removeEventListener("mousedown", onDocClick);
     }, []);
 
+    // Deal details (all but Apt #) are required once the visitor says they have a deal
+    const needsDealInfo = bestFit === "I have a deal";
+    const dealInfoComplete =
+      !needsDealInfo ||
+      Boolean(
+        streetValue.trim() &&
+          cityValue.trim() &&
+          selectedStateKey &&
+          zip.length === 5 &&
+          transactionType,
+      );
+
     const canSubmit =
       firstName.trim() &&
       lastName.trim() &&
       email.trim() &&
       phone.replace(/\D/g, "").length === 10 &&
-      bestFit.trim();
+      bestFit.trim() &&
+      dealInfoComplete;
 
     const submitLead = async () => {
       if (isSubmitting || !canSubmit) return;
@@ -342,7 +363,7 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
 
     if (submitted) {
       return (
-        <div className="w-full">
+        <div className="w-full pb-8">
           <div className="text-default-foreground text-3xl leading-9 font-bold">Thanks! 🎉</div>
           <div className="text-default-500 mt-1">
             We received your request. Our team will reach out shortly.
@@ -428,9 +449,10 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
             <div className="relative col-span-12 md:col-span-8" id="simple-street-autocomplete-root">
               <Input
                 className="w-full"
-                label={<Optional text="Street" />}
+                label={<Required text="Street" />}
                 name="street"
                 placeholder="123 Main St"
+                required
                 value={streetValue}
                 onChange={onStreetInputChange}
                 onFocus={() => setShowPredictions(placePredictions.length > 0)}
@@ -468,16 +490,17 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
             />
             <Input
               className="col-span-12 md:col-span-4"
-              label={<Optional text="City" />}
+              label={<Required text="City" />}
               name="city"
               placeholder="San Francisco"
+              required
               value={cityValue}
               onChange={(e) => setCityValue(e.target.value)}
               {...inputProps}
             />
             <Select
               className="col-span-12 md:col-span-4"
-              label={<Optional text="State" />}
+              label={<Required text="State" />}
               name="state"
               placeholder="Select state"
               selectedKeys={selectedStateKey ? [selectedStateKey] : []}
@@ -490,9 +513,10 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
             </Select>
             <Input
               className="col-span-12 md:col-span-4"
-              label={<Optional text="Zip Code" />}
+              label={<Required text="Zip Code" />}
               name="zip"
               placeholder="94105"
+              required
               type="text"
               inputMode="numeric"
               pattern="^[0-9]{5}$"
@@ -502,10 +526,9 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
               {...inputProps}
             />
 
-            {/* Optional Other Fields */}
             <Select
               className="col-span-12 md:col-span-6"
-              label={<Optional text="Transaction Type" />}
+              label={<Required text="Transaction Type" />}
               name="transaction-type"
               placeholder="Select transaction type"
               selectedKeys={transactionType ? [transactionType] : []}
