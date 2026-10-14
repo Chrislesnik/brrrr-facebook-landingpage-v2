@@ -4,6 +4,7 @@ import React from "react";
 import {domAnimation, LazyMotion, m} from "framer-motion";
 
 import MultistepSidebar from "./multistep-sidebar";
+import ReviewsCarousel from "./reviews-carousel";
 import SimpleLeadForm from "./simple-lead-form";
 
 const variants = {
@@ -50,6 +51,8 @@ export default function AppSimple() {
             variants={variants}
           >
             <SimpleLeadForm />
+            {/* Social proof under the form, and under the thank-you message after submit */}
+            <ReviewsCarousel className="mt-2 mb-8" />
           </m.div>
         </LazyMotion>
       </div>
