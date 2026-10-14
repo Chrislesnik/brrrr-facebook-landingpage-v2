@@ -37,6 +37,10 @@ const states: StateProps[] = [
     value: "delaware",
   },
   {
+    title: "District of Columbia",
+    value: "district-of-columbia",
+  },
+  {
     title: "Florida",
     value: "florida",
   },
