@@ -56,11 +56,10 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
     }, [submitted]);
 
     // Bring the thank-you message into view — on mobile the visitor submits from the bottom
-    // of a long form. The body (not the window) is the scroll container per styles.css.
+    // of a long form.
     React.useEffect(() => {
       if (!submitted) return;
       window.scrollTo({top: 0});
-      document.body.scrollTo({top: 0});
     }, [submitted]);
 
     const inputProps: Pick<InputProps, "labelPlacement" | "classNames"> = {
@@ -385,8 +384,13 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
                 {...inputProps}
               />
               {addressAutocomplete.open && (
-                <div className="absolute z-50 mt-1 w-full rounded-large border border-default-200 bg-background shadow-large max-h-72 overflow-auto left-0">
-                  <div id={addressAutocomplete.listboxId} role="listbox" aria-label="Address suggestions">
+                <div className="suggestions-in absolute z-50 mt-1 w-full rounded-large bg-content1 shadow-medium p-1 max-h-72 overflow-auto left-0">
+                  <div
+                    id={addressAutocomplete.listboxId}
+                    role="listbox"
+                    aria-label="Address suggestions"
+                    className="flex flex-col gap-0.5"
+                  >
                     {addressAutocomplete.suggestions.map((s, i) => (
                       <button
                         key={s.placeId}
@@ -397,8 +401,8 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
                         tabIndex={-1}
                         onClick={() => void addressAutocomplete.select(s)}
                         className={
-                          "w-full text-left px-3 py-2 hover:bg-content3 focus:bg-content3 outline-none" +
-                          (i === addressAutocomplete.activeIndex ? " bg-content3" : "")
+                          "w-full text-left rounded-small px-2 py-1.5 outline-none transition-colors hover:bg-default-100" +
+                          (i === addressAutocomplete.activeIndex ? " bg-default-100" : "")
                         }
                       >
                         <div className="text-sm text-default-800">{s.mainText}</div>
@@ -406,7 +410,7 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
                       </button>
                     ))}
                   </div>
-                  <div className="px-3 py-1 text-[10px] text-default-500">Powered by Google</div>
+                  <div className="px-2 pt-1 pb-0.5 text-[10px] text-default-500">Powered by Google</div>
                 </div>
               )}
             </div>

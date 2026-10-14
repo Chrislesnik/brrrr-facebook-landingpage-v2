@@ -40,16 +40,27 @@
 	to { transform: rotate(360deg); }
 }
 
-/* Ensure the app background is always full-bleed black and never shows white */
+/* Ensure the app background is always full-bleed black and never shows white.
+   The window (not body) must stay the scroll container — HeroUI/React Aria popovers
+   lock and track window scrolling, and close or drift when body scrolls instead. */
 html, body {
-	min-height: 100%;
-	height: 100%;
 	background-color: #000000;
 	color: var(--color-white);
-	overflow-x: hidden;
-	overflow-y: auto;
 	-webkit-text-size-adjust: 100%;
 	text-size-adjust: 100%;
+}
+body {
+	/* clip (unlike hidden) prevents sideways scroll without creating a scroll container */
+	overflow-x: clip;
+}
+
+/* Address suggestions: same quick entrance as the HeroUI select popovers */
+@keyframes suggestions-in {
+	from { opacity: 0; transform: translateY(-4px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+.suggestions-in {
+	animation: suggestions-in 120ms ease-out;
 }
 #root {
 	min-height: 100vh;
