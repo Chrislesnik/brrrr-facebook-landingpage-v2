@@ -6,6 +6,7 @@ export type AddressSuggestion = {
   mainText: string;
   secondaryText: string;
   prediction: any;
+  legacy?: boolean;
 };
 
 export type SelectedAddress = {
@@ -18,8 +19,95 @@ export type SelectedAddress = {
 
 let missingKeyLogged = false;
 let requestErrorLogged = false;
+// Set once Places API (New) is rejected for this key (e.g. not in the key's API restrictions);
+// from then on the legacy AutocompleteService/PlacesService are used for the rest of the visit.
+let useLegacyPlaces = false;
 
-// Google Places (New) address suggestions for a single street input.
+type AddressComponent = {longText: string; shortText: string; types: string[]};
+
+const US_ADDRESS_REQUEST = {
+  includedRegionCodes: ["us"],
+  includedPrimaryTypes: ["street_address", "premise", "subpremise"],
+  language: "en-US",
+  region: "us",
+};
+
+async function fetchNewSuggestions(places: any, input: string, sessionToken: any) {
+  const {suggestions} = await places.AutocompleteSuggestion.fetchAutocompleteSuggestions({
+    ...US_ADDRESS_REQUEST,
+    input,
+    sessionToken: sessionToken || undefined,
+  });
+  return (suggestions || [])
+    .map((s: any) => s.placePrediction)
+    .filter(Boolean)
+    .map(
+      (p: any): AddressSuggestion => ({
+        placeId: p.placeId,
+        mainText: p.mainText?.text || p.text.text,
+        secondaryText: p.secondaryText?.text || "",
+        prediction: p,
+      }),
+    );
+}
+
+function fetchLegacySuggestions(places: any, input: string, sessionToken: any) {
+  return new Promise<AddressSuggestion[]>((resolve, reject) => {
+    new places.AutocompleteService().getPlacePredictions(
+      {
+        input,
+        types: ["address"],
+        componentRestrictions: {country: "us"},
+        sessionToken: sessionToken || undefined,
+      },
+      (preds: any[] | null, status: string) => {
+        if (status !== "OK" && status !== "ZERO_RESULTS") {
+          reject(new Error(`Legacy Places autocomplete failed: ${status}`));
+          return;
+        }
+        resolve(
+          (preds || []).map((p) => ({
+            placeId: p.place_id,
+            mainText: p.structured_formatting?.main_text || p.description,
+            secondaryText: p.structured_formatting?.secondary_text || "",
+            prediction: p,
+            legacy: true,
+          })),
+        );
+      },
+    );
+  });
+}
+
+async function fetchNewComponents(suggestion: AddressSuggestion): Promise<AddressComponent[]> {
+  const place = suggestion.prediction.toPlace();
+  await place.fetchFields({fields: ["addressComponents"]});
+  return place.addressComponents || [];
+}
+
+function fetchLegacyComponents(places: any, placeId: string, sessionToken: any) {
+  return new Promise<AddressComponent[]>((resolve, reject) => {
+    new places.PlacesService(document.createElement("div")).getDetails(
+      {placeId, sessionToken: sessionToken || undefined, fields: ["address_components"]},
+      (place: any, status: string) => {
+        if (status !== "OK" || !place?.address_components) {
+          reject(new Error(`Legacy Places details failed: ${status}`));
+          return;
+        }
+        resolve(
+          place.address_components.map((c: any) => ({
+            longText: c.long_name,
+            shortText: c.short_name,
+            types: c.types,
+          })),
+        );
+      },
+    );
+  });
+}
+
+// Google Places address suggestions for a single street input. Uses Places API (New), falling
+// back to the legacy Places API when the key isn't allowed to call the new one.
 // Without VITE_GOOGLE_MAPS_API_KEY it stays inactive and the input behaves as plain text.
 export function useAddressAutocomplete(onSelect: (address: SelectedAddress) => void) {
   const [suggestions, setSuggestions] = React.useState<AddressSuggestion[]>([]);
@@ -76,25 +164,22 @@ export function useAddressAutocomplete(onSelect: (address: SelectedAddress) => v
         return;
       }
       try {
-        const {suggestions: results} =
-          await places.AutocompleteSuggestion.fetchAutocompleteSuggestions({
-            input: value,
-            sessionToken: sessionTokenRef.current || undefined,
-            includedRegionCodes: ["us"],
-            includedPrimaryTypes: ["street_address", "premise", "subpremise"],
-            language: "en-US",
-            region: "us",
-          });
+        let next: AddressSuggestion[];
+        if (useLegacyPlaces) {
+          next = await fetchLegacySuggestions(places, value, sessionTokenRef.current);
+        } else {
+          try {
+            next = await fetchNewSuggestions(places, value, sessionTokenRef.current);
+          } catch (newErr) {
+            useLegacyPlaces = true;
+            console.info(
+              "Places API (New) unavailable for this key — using the legacy Places API.",
+              (newErr as Error)?.message || newErr,
+            );
+            next = await fetchLegacySuggestions(places, value, sessionTokenRef.current);
+          }
+        }
         if (requestId !== requestIdRef.current) return;
-        const next: AddressSuggestion[] = (results || [])
-          .map((s: any) => s.placePrediction)
-          .filter(Boolean)
-          .map((p: any) => ({
-            placeId: p.placeId,
-            mainText: p.mainText?.text || p.text.text,
-            secondaryText: p.secondaryText?.text || "",
-            prediction: p,
-          }));
         setSuggestions(next);
         setActiveIndex(-1);
         setOpen(next.length > 0);
@@ -132,9 +217,9 @@ export function useAddressAutocomplete(onSelect: (address: SelectedAddress) => v
       zip: "",
     };
     try {
-      const place = suggestion.prediction.toPlace();
-      await place.fetchFields({fields: ["addressComponents"]});
-      const components: any[] = place.addressComponents || [];
+      const components = suggestion.legacy
+        ? await fetchLegacyComponents(placesRef.current, suggestion.placeId, sessionTokenRef.current)
+        : await fetchNewComponents(suggestion);
       const getComponent = (type: string, short = true) => {
         const comp = components.find((c) => c.types.includes(type));
         return comp ? (short ? comp.shortText : comp.longText) : "";
@@ -154,7 +239,7 @@ export function useAddressAutocomplete(onSelect: (address: SelectedAddress) => v
     } catch {
       // fall through with the suggestion text
     } finally {
-      // fetchFields ends the billing session; the next search needs a fresh token.
+      // The details call ends the billing session; the next search needs a fresh token.
       const places = placesRef.current;
       if (places) sessionTokenRef.current = new places.AutocompleteSessionToken();
     }
