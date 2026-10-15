@@ -72,12 +72,22 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
       window.scrollTo({top: 0});
     }, [submitted]);
 
+    const labelClassName =
+      "text-small font-medium text-default-700 group-data-[filled-within=true]:text-default-700";
     const inputProps: Pick<InputProps, "labelPlacement" | "classNames"> = {
       labelPlacement: "outside",
       classNames: {
-        label:
-          "text-small font-medium text-default-700 group-data-[filled-within=true]:text-default-700",
+        label: labelClassName,
+        // Let the real <input> fill the whole box (padding moved inside it), so click/drag,
+        // double-click and long-press anywhere in the field select text — HeroUI's default
+        // leaves only a 20px strip in the middle of the 40px box.
+        inputWrapper: "px-0",
+        input: "h-full px-3",
       },
+    };
+    const textareaProps: Pick<InputProps, "labelPlacement" | "classNames"> = {
+      labelPlacement: "outside",
+      classNames: {label: labelClassName},
     };
     const selectProps: Pick<SelectProps, "labelPlacement" | "classNames"> = {
       labelPlacement: "outside",
@@ -498,9 +508,11 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
                         aria-selected={i === addressAutocomplete.activeIndex}
                         tabIndex={-1}
                         onClick={() => void addressAutocomplete.select(s)}
+                        // Mouse and arrow keys share one highlighted row
+                        onMouseEnter={() => addressAutocomplete.setActiveIndex(i)}
                         className={
-                          "w-full text-left rounded-small px-2 py-1.5 outline-none transition-colors hover:bg-default-100" +
-                          (i === addressAutocomplete.activeIndex ? " bg-default-100" : "")
+                          "w-full text-left rounded-small px-2 py-1.5 outline-none transition-colors" +
+                          (i === addressAutocomplete.activeIndex ? " bg-default-200" : "")
                         }
                       >
                         <div className="text-sm text-default-800">{s.mainText}</div>
@@ -584,7 +596,7 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
           minRows={3}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          {...inputProps}
+          {...textareaProps}
         />
 
         <div className="col-span-12 mt-2 flex justify-start">

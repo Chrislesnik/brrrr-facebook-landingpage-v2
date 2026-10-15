@@ -284,6 +284,7 @@ export function useAddressAutocomplete(onSelect: (address: SelectedAddress) => v
     suggestions,
     open: open && suggestions.length > 0,
     activeIndex,
+    setActiveIndex,
     listboxId,
     optionId,
     onInputChange,

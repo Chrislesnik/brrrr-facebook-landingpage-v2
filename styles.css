@@ -49,9 +49,29 @@ html, body {
 	-webkit-text-size-adjust: 100%;
 	text-size-adjust: 100%;
 }
+html {
+	/* Dark native UI: caret, selection handles, scrollbars, autofill */
+	color-scheme: dark;
+}
 body {
 	/* clip (unlike hidden) prevents sideways scroll without creating a scroll container */
 	overflow-x: clip;
+	touch-action: manipulation;
+}
+
+/* Clearly visible text highlight on the dark fields, same on every browser */
+::selection {
+	background-color: rgba(255, 122, 0, 0.45);
+	color: #ffffff;
+}
+
+/* Phones: 16px field text so iOS doesn't zoom in when a field is focused */
+@media (max-width: 640px) {
+	input,
+	textarea,
+	[data-slot="value"] {
+		font-size: 16px !important;
+	}
 }
 
 /* Address suggestions: same quick entrance as the HeroUI select popovers */
