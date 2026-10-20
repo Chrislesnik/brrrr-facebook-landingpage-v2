@@ -209,7 +209,7 @@ export default function ReviewsCarousel({
           </MotionConfig>
         </div>
 
-        <div className="mt-3 flex items-center justify-between gap-2">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-x-2 gap-y-2">
           {count > 1 ? (
             <div className="flex items-center gap-1">
               <Button
