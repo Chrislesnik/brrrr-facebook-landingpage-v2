@@ -17,6 +17,7 @@ import {ButtonWithBorderGradient} from "./button-with-border-gradient";
 import type {SelectedAddress} from "./use-address-autocomplete";
 import {useAddressAutocomplete} from "./use-address-autocomplete";
 import {trackMetaEvent} from "./meta-pixel";
+import ThankYouObjections from "./thank-you-objections";
 
 export type SimpleLeadFormProps = React.HTMLAttributes<HTMLFormElement>;
 
@@ -386,6 +387,8 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
               )}
             </div>
           )}
+
+          <ThankYouObjections className="mt-8" />
         </div>
       );
     }
