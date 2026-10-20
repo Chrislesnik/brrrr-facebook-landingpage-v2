@@ -66,8 +66,10 @@ export default function ThankYouObjections({className}: ThankYouObjectionsProps)
         defaultExpandedKeys={["0"]}
         itemClasses={{
           trigger: "py-3",
-          title: "text-default-foreground text-medium font-semibold",
-          indicator: "text-default-500",
+          // The open question takes the brand orange so it's clear which answer is showing
+          title:
+            "text-default-foreground text-medium font-semibold data-[open=true]:text-[var(--color-primary)]",
+          indicator: "text-default-500 data-[open=true]:text-[var(--color-primary)]",
           content: "text-default-500 text-small pt-0 pb-4 leading-6",
         }}
         variant="light"
