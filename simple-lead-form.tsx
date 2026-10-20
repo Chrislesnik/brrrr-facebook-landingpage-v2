@@ -48,16 +48,6 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
     const [submitted, setSubmitted] = React.useState(false);
     const leadTrackedRef = React.useRef(false);
 
-    // "Text us" shortcut on the thank-you screen — hidden unless VITE_SMS_NUMBER is set
-    const smsNumber = (import.meta.env.VITE_SMS_NUMBER as string | undefined)?.trim();
-    const [isPhoneDevice] = React.useState(
-      () =>
-        typeof window !== "undefined" &&
-        window.matchMedia("(hover: none) and (pointer: coarse)").matches,
-    );
-    const [messageCopied, setMessageCopied] = React.useState(false);
-    const contactTrackedRef = React.useRef(false);
-
     // Fire plain Lead only — financial-category "core setup" restrictions
     // block custom parameters and URL query data from being processed by Meta.
     React.useEffect(() => {
@@ -294,99 +284,13 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
       await submitLead();
     };
 
-    // Pre-filled text for the thank-you "Text us" shortcut
-    const buildSmsMessage = () => {
-      const name = `${firstName.trim()} ${lastName.trim()}`.trim();
-      const street = [streetValue.trim(), apt.trim()].filter(Boolean).join(" ");
-      if (needsDealInfo && street) {
-        const place = `${street}, ${cityValue.trim()}, ${getStateAbbr()} ${zip}`.trim();
-        const deal = transactionType ? ` (${transactionType})` : "";
-        return (
-          `Hey, I'm ${name}, and I just filled out my form. ` +
-          `This is the property I'm looking at: ${place}${deal}. Looking forward to hearing from you!`
-        );
-      }
-      return (
-        `Hey, I'm ${name}, and I just filled out my form. ` +
-        `I'm looking for general info on your loans. Looking forward to hearing from you!`
-      );
-    };
-
-    // Plain standard event, same as Lead — no custom parameters under Meta's financial restrictions
-    const trackContactOnce = () => {
-      if (contactTrackedRef.current) return;
-      contactTrackedRef.current = true;
-      trackMetaEvent("Contact");
-    };
-
-    const copySmsMessage = async (text: string) => {
-      try {
-        await navigator.clipboard.writeText(text);
-      } catch {
-        const textarea = document.createElement("textarea");
-        textarea.value = text;
-        textarea.setAttribute("readonly", "");
-        textarea.style.position = "fixed";
-        textarea.style.opacity = "0";
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand("copy");
-        textarea.remove();
-      }
-      setMessageCopied(true);
-      window.setTimeout(() => setMessageCopied(false), 2000);
-      trackContactOnce();
-    };
-
     if (submitted) {
-      const smsMessage = buildSmsMessage();
-      const smsHref = smsNumber ? `sms:${smsNumber}?&body=${encodeURIComponent(smsMessage)}` : "";
       return (
         <div className="w-full pb-8">
           <div className="text-default-foreground text-3xl leading-9 font-bold">Thanks! 🎉</div>
           <div className="text-default-500 mt-1">
             We received your request. Our team will reach out shortly.
           </div>
-
-          {smsNumber && (
-            <div className="rounded-large bg-content1 shadow-small mt-6 p-4">
-              <div className="text-default-foreground text-medium font-semibold">
-                Want to skip the line?
-              </div>
-              <div className="text-default-500 text-small mt-1">
-                Text us now and you&apos;re in the queue.
-              </div>
-              {isPhoneDevice ? (
-                <div className="mt-4">
-                  <ButtonWithBorderGradient as="a" href={smsHref} fullWidth onPress={trackContactOnce}>
-                    Text us 💬
-                  </ButtonWithBorderGradient>
-                </div>
-              ) : (
-                <>
-                  <div className="text-default-500 text-small mt-3">
-                    Text{" "}
-                    <a
-                      className="text-default-foreground font-medium"
-                      href={smsHref}
-                      onClick={trackContactOnce}
-                    >
-                      {formatUsPhone(smsNumber)}
-                    </a>{" "}
-                    with this message:
-                  </div>
-                  <div className="rounded-medium bg-default-100 text-default-700 text-small mt-2 p-3">
-                    {smsMessage}
-                  </div>
-                  <div className="mt-3">
-                    <ButtonWithBorderGradient onPress={() => void copySmsMessage(smsMessage)}>
-                      {messageCopied ? "Copied ✓" : "Copy message"}
-                    </ButtonWithBorderGradient>
-                  </div>
-                </>
-              )}
-            </div>
-          )}
 
           <ThankYouObjections className="mt-8" />
         </div>
