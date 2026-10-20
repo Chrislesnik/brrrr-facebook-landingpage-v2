@@ -20,9 +20,9 @@ export const objections: Objection[] = [
     quote: {text: "Never a last minute bait and switch of terms.", source: "Mark S., Google review"},
   },
   {
-    question: "“I can’t show W-2s or tax returns.”",
+    question: "“I’ve never done a deal before.”",
     answer:
-      "You don’t need them. DSCR rental loans qualify on the property’s rent: no tax returns, no income or employment verification.",
+      "No experience is required for fix and flip loans. We’ll walk you through every step.",
   },
   {
     question: "“Will my credit score qualify?”",
@@ -30,9 +30,9 @@ export const objections: Objection[] = [
       "Our minimum credit score is 680. If you’re there, your rate and leverage depend on the whole deal, not just your score.",
   },
   {
-    question: "“I’ve never done a deal before.”",
+    question: "“I can’t show W-2s or tax returns.”",
     answer:
-      "No experience is required for fix and flip loans. We’ll walk you through every step.",
+      "You don’t need them. DSCR rental loans qualify on the property’s rent: no tax returns, no income or employment verification.",
   },
   {
     question: "“I don’t have much cash to put down.”",
