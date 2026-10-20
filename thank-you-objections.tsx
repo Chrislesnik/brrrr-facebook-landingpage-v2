@@ -8,6 +8,8 @@ import {Accordion, AccordionItem, cn} from "@heroui/react";
 export type Objection = {
   question: string;
   answer: string;
+  // "As low as" rates, shown loan type first, then rate. Update these when rates move.
+  rates?: {loan: string; rate: string}[];
   quote?: {text: string; source: string};
 };
 
@@ -16,6 +18,10 @@ export const objections: Objection[] = [
     question: "“Your rates are too high for my deal.”",
     answer:
       "Our rates are competitive, and your quote is priced on your actual deal, not a generic rate sheet. You’ll see the numbers upfront before you commit to anything.",
+    rates: [
+      {loan: "Fix and flip", rate: "9.99%"},
+      {loan: "DSCR", rate: "6.875%"},
+    ],
     // From Mark Santoro's review in google-reviews.ts
     quote: {text: "Never a last minute bait and switch of terms.", source: "Mark S., Google review"},
   },
@@ -76,6 +82,21 @@ export default function ThankYouObjections({className}: ThankYouObjectionsProps)
       >
         {objections.map((o, i) => (
           <AccordionItem key={String(i)} aria-label={o.question} title={o.question}>
+            {o.rates && (
+              <div className="mb-3">
+                <p className="text-default-foreground font-medium">We go as low as:</p>
+                <dl className="mt-2 grid grid-cols-2 gap-2">
+                  {o.rates.map((r) => (
+                    <div key={r.loan} className="rounded-medium bg-content1 px-3 py-2.5">
+                      <dt className="text-default-foreground text-small font-semibold">{r.loan}</dt>
+                      <dd className="text-2xl leading-8 font-bold text-[var(--color-primary)] tabular-nums">
+                        {r.rate}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            )}
             {o.answer}
             {o.quote && (
               <figure className="border-l-3 mt-3 border-[var(--color-primary)] pl-3">
