@@ -33,7 +33,7 @@ export const objections: Objection[] = [
   {
     question: "“Will my credit score qualify?”",
     answer:
-      "Our minimum credit score is 680. If you’re there, your rate and leverage depend on the whole deal, not just your score.",
+      "Our minimum credit score is 660. If you’re there, your rate and leverage depend on the whole deal, not just your score.",
   },
   {
     question: "“I can’t show W-2s or tax returns.”",
