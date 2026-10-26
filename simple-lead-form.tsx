@@ -264,7 +264,7 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
           notes: notes || "",
         };
 
-        await fetch("https://n8n.axora.info/webhook/45693320-e8c0-46d4-af7c-8f64a73e46e1", {
+        await fetch("https://n8n.axora.info/webhook/brrrr-v2-lead-c13b477f-afea-4521-851a-37bdc22e2266", {
           method: "POST",
           headers: {"Content-Type": "application/json"},
           body: JSON.stringify({variant: "simple", ...payload}),
