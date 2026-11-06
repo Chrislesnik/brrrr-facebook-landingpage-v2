@@ -14,7 +14,9 @@ export type SelectedAddress = {
   apt: string;
   city: string;
   stateAbbr: string;
+  stateName: string;
   zip: string;
+  county: string;
 };
 
 let missingKeyLogged = false;
@@ -214,7 +216,9 @@ export function useAddressAutocomplete(onSelect: (address: SelectedAddress) => v
       apt: "",
       city: "",
       stateAbbr: "",
+      stateName: "",
       zip: "",
+      county: "",
     };
     try {
       const components = suggestion.legacy
@@ -226,15 +230,19 @@ export function useAddressAutocomplete(onSelect: (address: SelectedAddress) => v
       };
       const streetNumber = getComponent("street_number");
       const route = getComponent("route", false);
+      const city =
+        getComponent("locality", false) ||
+        getComponent("sublocality", false) ||
+        getComponent("administrative_area_level_2", false);
+      const county = getComponent("administrative_area_level_2", false);
       address = {
         street: streetNumber ? `${streetNumber} ${route}`.trim() : suggestion.mainText,
         apt: getComponent("subpremise"),
-        city:
-          getComponent("locality", false) ||
-          getComponent("sublocality", false) ||
-          getComponent("administrative_area_level_2", false),
+        city,
         stateAbbr: getComponent("administrative_area_level_1"),
+        stateName: getComponent("administrative_area_level_1", false),
         zip: getComponent("postal_code"),
+        county: county && county !== city ? county : "",
       };
     } catch {
       // fall through with the suggestion text

@@ -51,7 +51,7 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
     // Fire plain Lead only — financial-category "core setup" restrictions
     // block custom parameters and URL query data from being processed by Meta.
     React.useEffect(() => {
-      if (!submitted || leadTrackedRef.current) return;
+      if (!submitted || leadTrackedRef.current || import.meta.env.DEV) return;
       leadTrackedRef.current = true;
       trackMetaEvent("Lead");
     }, [submitted]);
@@ -264,11 +264,13 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
           notes: notes || "",
         };
 
-        await fetch("https://n8n.axora.info/webhook/brrrr-v2-lead-c13b477f-afea-4521-851a-37bdc22e2266", {
-          method: "POST",
-          headers: {"Content-Type": "application/json"},
-          body: JSON.stringify({variant: "simple", ...payload}),
-        });
+        if (!import.meta.env.DEV) {
+          await fetch("https://n8n.axora.info/webhook/brrrr-v2-lead-c13b477f-afea-4521-851a-37bdc22e2266", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({variant: "simple", ...payload}),
+          });
+        }
         setSubmitted(true);
       } catch {
         // Still show thanks + fire Lead if the network call fails —

@@ -1,11 +1,8 @@
-"use client";
-
-import React from "react";
 import {domAnimation, LazyMotion, m} from "framer-motion";
 
-import MultistepSidebar from "./multistep-sidebar";
-import ReviewsCarousel from "./reviews-carousel";
-import SimpleLeadForm from "./simple-lead-form";
+import MultistepSidebar from "../multistep-sidebar";
+import ReviewsCarousel from "../reviews-carousel";
+import SimpleLeadForm from "../simple-lead-form";
 
 const variants = {
   enter: (direction: number) => ({
@@ -24,14 +21,9 @@ const variants = {
   }),
 };
 
-export default function AppSimple() {
+export default function HomePage() {
   return (
-    <MultistepSidebar
-      currentPage={0}
-      onBack={() => {}}
-      onChangePage={() => {}}
-      onNext={() => {}}
-    >
+    <MultistepSidebar currentPage={0} onBack={() => {}} onChangePage={() => {}} onNext={() => {}}>
       <div className="relative flex h-fit w-full flex-col pt-1 text-left lg:h-full lg:justify-center lg:pt-0">
         <LazyMotion features={domAnimation}>
           <m.div
@@ -51,7 +43,6 @@ export default function AppSimple() {
             variants={variants}
           >
             <SimpleLeadForm />
-            {/* Social proof under the form, and under the thank-you message after submit */}
             <ReviewsCarousel className="mt-2 mb-8" />
           </m.div>
         </LazyMotion>
@@ -59,5 +50,3 @@ export default function AppSimple() {
     </MultistepSidebar>
   );
 }
-
-
