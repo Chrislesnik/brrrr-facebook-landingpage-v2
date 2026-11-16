@@ -239,9 +239,16 @@ export function parseQuote(payload: unknown): QuoteResult {
   const programsRaw = body.programs ?? body.results ?? body.quotes;
   const programs = Array.isArray(programsRaw) ? programsRaw.map(programOf) : [];
   const passing = programs.find((program) => program.pass !== false);
-  const quoteId = idField(body, "quote_id", "quoteId");
+  const passingRaw = Array.isArray(programsRaw)
+    ? programsRaw.find((item) => {
+        const row = item && typeof item === "object" ? (item as Record<string, unknown>) : {};
+        return row.pass !== false && row.eligible !== false;
+      })
+    : undefined;
+  const passingRow = passingRaw && typeof passingRaw === "object" ? (passingRaw as Record<string, unknown>) : {};
+  const quoteId = idField(body, "quote_id", "quoteId") || asId(passingRow.quote_id) || asId(passingRow.quoteId) || null;
   const options = loanOptionsFrom(body.options, quoteId && quoteId !== null ? quoteId : undefined);
-  const optionId = idField(body, "option_id", "optionId");
+  const optionId = idField(body, "option_id", "optionId") || asId(passingRow.option_id) || asId(passingRow.optionId) || null;
   const missingRaw = body.missing_required ?? body.missing;
   const missing = Array.isArray(missingRaw)
     ? missingRaw.map((item) => {

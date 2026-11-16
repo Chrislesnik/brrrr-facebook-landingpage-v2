@@ -1,5 +1,6 @@
 import React, {useEffect} from "react";
 import ReactDOM from "react-dom/client";
+import PricingChat from "./pricing/PricingChat";
 import PricingIntro from "./pricing/PricingIntro";
 import PricingResult from "./pricing/PricingResult";
 import PricingStacked from "./pricing/PricingStacked";
@@ -33,6 +34,7 @@ function AppRoutes() {
   if (path === "/pricing/result") return <PricingResult />;
   if (path === "/pricing/steps") return <PricingSteps />;
   if (path === "/pricing/scenario") return <PricingStacked />;
+  if (path === "/pricing/chat") return <PricingChat />;
   return <PricingIntro />;
 }
 

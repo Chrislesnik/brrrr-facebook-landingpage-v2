@@ -1,6 +1,7 @@
 import {pricingInputs} from "./model";
 import {loanOptionPayload, visibleLoanOptions, type LoanOption} from "./quote";
 import {
+  beginQuote,
   readPricingLead,
   readQuoteInputs,
   readQuoteSession,
@@ -282,7 +283,10 @@ function stillPending(requestId: string): ScenarioSave | null {
 
 function messageFrom(payload: unknown, fallback: string): string {
   const body = unwrap(payload);
-  return asText(body.message) || fallback;
+  const error = body.error;
+  const errorText =
+    typeof error === "string" ? error : error && typeof error === "object" ? asText((error as Record<string, unknown>).message) : "";
+  return asText(body.message) || errorText || asText(body.hint) || fallback;
 }
 
 function scenariosFrom(body: Record<string, unknown>): Record<string, SavedSheet> {
@@ -450,6 +454,7 @@ async function runSave(requestId: string, lead: PricingLead | null) {
     }
     const options = shownOptions(quote);
     const selected = chosenId(options, pending.selectedOptionId);
+    const selectedOption = options.find((option) => option.id === selected);
     if (quote.status === "ready" && quote.result.preview) {
       await wait(700);
       if (!stillPending(requestId)) return;
@@ -484,13 +489,15 @@ async function runSave(requestId: string, lead: PricingLead | null) {
       });
       return;
     }
+    const quoteId =
+      (quote.status === "ready" ? quote.result.quoteId : undefined) ?? selectedOption?.quoteId;
     const payload: Record<string, unknown> = {
       requestId,
-      quote_id: quote.status === "ready" ? quote.result.quoteId ?? null : null,
+      quote_id: quoteId ?? null,
+      option_id: selected || (quote.status === "ready" ? quote.result.optionId ?? null : null),
       inputs: pricingInputs(stored.values, stored.tables),
     };
     if (options.length > 0) {
-      const quoteId = quote.status === "ready" ? quote.result.quoteId : undefined;
       payload.selected_option_id = selected;
       payload.options = options.map((option) => loanOptionPayload(option, quoteId));
       if (pending.loanId) payload.loanId = pending.loanId;
@@ -518,6 +525,9 @@ async function runSave(requestId: string, lead: PricingLead | null) {
       json = null;
     }
     if (!stillPending(requestId)) return;
+    if (!response.ok && QUOTE_GONE.test(messageFrom(json, "")) && Date.now() - lastReprice > 60_000) {
+      if (repriceAndSave(pending, lead)) return;
+    }
     const ready = response.ok ? linksFrom(json, requestId, selected) : null;
     if (!ready || ready.status !== "ready") {
       commit({
@@ -602,10 +612,28 @@ export function retryOptionSelection(lead: PricingLead | null, optionId: string)
   beginScenarioSave(lead, optionId);
 }
 
-/** Retry the current attempt with the same request id. */
+const QUOTE_GONE = /couldn.t find your saved quote/i;
+let lastReprice = 0;
+
+/** Price the same inputs again, then save the new quote. Used when the old quote expired or was already saved. */
+function repriceAndSave(base: ScenarioSave, lead: PricingLead | null): boolean {
+  const inputs = readQuoteInputs();
+  const session = readQuoteSession();
+  if (!inputs || session.status === "idle") return false;
+  const requestId = crypto.randomUUID();
+  const {quoteKey: _previous, ...kept} = keptTarget(base);
+  lastReprice = Date.now();
+  beginQuote(inputs.values, inputs.tables, session.returnTo);
+  commit({status: "pending", requestId, ...kept});
+  void runSave(requestId, lead);
+  return true;
+}
+
+/** Retry the current attempt. A quote n8n can no longer find is priced again first. */
 export function retryScenarioSave(lead: PricingLead | null) {
   const current = readScenarioSave();
   if (current.status !== "error") return;
+  if (QUOTE_GONE.test(current.message) && repriceAndSave(current, lead)) return;
   commit({...current, status: "pending"});
   void runSave(current.requestId, lead);
 }

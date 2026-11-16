@@ -51,7 +51,7 @@ const INPUTS_KEY = "pricing-quote-inputs";
 const RETURN_KEY = "pricing-return-path";
 const LEAD_KEY = "pricing-lead";
 
-const RETURN_PATHS = ["/pricing", "/pricing/scenario", "/pricing/steps"];
+const RETURN_PATHS = ["/pricing", "/pricing/scenario", "/pricing/steps", "/pricing/chat"];
 
 export type QuoteSession =
   | {status: "idle"}

@@ -157,7 +157,7 @@ export default function PricingResult() {
   );
 }
 
-function ScenarioActions(props: {lead: PricingLead | null; optionId: string; save: ScenarioSave}) {
+export function ScenarioActions(props: {lead: PricingLead | null; optionId: string; save: ScenarioSave}) {
   const [fetchingSheet, setFetchingSheet] = useState(false);
   const unsaved = props.save.status === "ready" && Boolean(props.optionId) && props.save.unsavedOptionIds?.includes(props.optionId);
   const sheetWaiting = props.save.status === "pending" || fetchingSheet;
@@ -281,7 +281,7 @@ function OptionToggle(props: {onSelect: (id: string) => void; options: LoanOptio
   );
 }
 
-function RateBody(props: {
+export function RateBody(props: {
   footer?: ReactNode;
   onSelect: (id: string) => void;
   revealed: boolean;

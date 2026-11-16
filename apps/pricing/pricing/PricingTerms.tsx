@@ -11,6 +11,7 @@ import {
   writePricingLead,
   type PricingLead,
 } from "./quote-session";
+import {readPricingFlow} from "./flow";
 import {authorizeApplicant} from "./scenario-save";
 
 const LEAD_URL = "https://n8n.axora.info/webhook/brrrr-v2-lead-c13b477f-afea-4521-851a-37bdc22e2266";
@@ -55,6 +56,7 @@ function sendLead(lead: PricingLead) {
   const scenario = readQuoteInputs()?.values;
   const payload = {
     variant: "pricing",
+    flow: readPricingFlow(),
     firstName: lead.firstName.trim(),
     lastName: lead.lastName.trim(),
     email: lead.email.trim(),
