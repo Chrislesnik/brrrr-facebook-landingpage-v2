@@ -21,6 +21,10 @@ import ThankYouObjections from "./thank-you-objections";
 
 export type SimpleLeadFormProps = React.HTMLAttributes<HTMLFormElement>;
 
+// Shared with the agent variant so both A/B versions post to the same lead webhook.
+export const LEAD_WEBHOOK_URL =
+  "https://n8n.axora.info/webhook/brrrr-v2-lead-c13b477f-afea-4521-851a-37bdc22e2266";
+
 const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
   ({className, ...props}, ref) => {
     const formRef = React.useRef<HTMLFormElement>(null);
@@ -264,7 +268,7 @@ const SimpleLeadForm = React.forwardRef<HTMLFormElement, SimpleLeadFormProps>(
           notes: notes || "",
         };
 
-        await fetch("https://n8n.axora.info/webhook/brrrr-v2-lead-c13b477f-afea-4521-851a-37bdc22e2266", {
+        await fetch(LEAD_WEBHOOK_URL, {
           method: "POST",
           headers: {"Content-Type": "application/json"},
           body: JSON.stringify({variant: "simple", ...payload}),

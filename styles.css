@@ -96,6 +96,55 @@ body {
 	}
 }
 
+/* Agent A/B (?variant=agent): warm canvas from the chat-onboarding reference, light fields. */
+html.agent-canvas,
+html.agent-canvas body,
+html.agent-canvas #root {
+	background-color: #e7e2d8;
+	color: #1c1917;
+	color-scheme: light;
+}
+.agent-window {
+	font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+	color: #1c1917;
+}
+.agent-serif {
+	font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+	font-weight: 520;
+}
+@keyframes agent-pulse {
+	0%, 100% { opacity: 1; }
+	50% { opacity: 0.4; }
+}
+.agent-pulse { animation: agent-pulse 2.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+	.agent-pulse { animation: none; }
+}
+/* Reviews sit on the light canvas, so semantic dark-theme text has to flip back. */
+.agent-reviews .text-default-foreground { color: #1c1917 !important; }
+.agent-reviews .text-default-700 { color: #44403c !important; }
+.agent-reviews .text-default-600 { color: #57534e !important; }
+.agent-reviews .text-default-500 { color: #78716c !important; }
+.agent-reviews .text-default-400 { color: #a8a29e !important; }
+.agent-window details[open] > summary { color: #ff7a00; }
+.agent-window summary::-webkit-details-marker { display: none; }
+.agent-pins { scrollbar-width: none; }
+.agent-pins::-webkit-scrollbar { display: none; }
+
+html.agent-canvas input:-webkit-autofill,
+html.agent-canvas input:-webkit-autofill:hover,
+html.agent-canvas input:-webkit-autofill:focus,
+html.agent-canvas input:-webkit-autofill:active,
+html.agent-canvas textarea:-webkit-autofill,
+html.agent-canvas textarea:-webkit-autofill:hover,
+html.agent-canvas textarea:-webkit-autofill:focus,
+html.agent-canvas textarea:-webkit-autofill:active {
+	-webkit-text-fill-color: #1c1917 !important;
+	caret-color: #1c1917;
+	-webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+	box-shadow: 0 0 0 1000px #ffffff inset !important;
+}
+
 /* Safari / iOS / Chrome autofill: keep white text on dark inputs.
    Browsers override `color` on autofilled fields; -webkit-text-fill-color wins. */
 input:-webkit-autofill,
